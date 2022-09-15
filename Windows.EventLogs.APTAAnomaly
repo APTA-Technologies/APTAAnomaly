@@ -1,0 +1,40 @@
+name: Windows.EventLogs.APTAnomaly
+description: |
+
+    This artifact leverages software model reverse engineering to
+    capture novel behaviors in Windows Event Logs.
+    It depends on FlexFringe, an open source tool published by
+    TU Delft with proprietary extensions
+
+    https://github.com/APTATechnologies/tbd
+
+author: Chris Hammerschmidt, Tom Catshoek
+tools:
+  - name: APTAAnomaly
+    url: https://github.com/APTA-Technologies/APTAAnomaly/releases/download/v0.0.1/aptaanomaly.zip
+
+precondition: SELECT OS From info() where OS = 'windows'
+
+parameters:
+  - name: EVTXPath
+    default: 'C:\Windows\System32\winevt\Logs'
+  - name: ExecLength
+    description: Size (in bytes) of output that will be returned for a single row for execve().  This value may need to be adjusted depending on the size of your event logs.
+    type: int
+    default: "100000000"
+
+sources:
+  - query: |
+        LET Toolzip <= SELECT FullPath FROM Artifact.Generic.Utils.FetchBinary(ToolName="APTAAnomaly", IsExecutable=FALSE)
+        LET TmpDir <= tempdir()
+        LET TmpResults <= tempdir()
+        LET UnzipIt <= SELECT * FROM unzip(filename=Toolzip.FullPath, output_directory=TmpDir)
+        LET ExecCS <= SELECT * FROM execve(argv=[
+                        TmpDir + 'aptaanomaly.exe',
+                        '--input', EVTXPath,
+                        '--output', TmpResults
+                        '--flexfringe', TmpDir + 'flexfringe-x64-windows.exe'], length=ExecLength)
+        SELECT * FROM foreach (
+            row={ SELECT FullPath FROM glob(globs=TmpResults + "/*.ff.final.json.result" },
+            query={ SELECT * FROM parse_csv(data=read_file(filename=FullPath)) }
+        )
