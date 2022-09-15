@@ -6,7 +6,7 @@ description: |
     It depends on FlexFringe, an open source tool published by
     TU Delft with proprietary extensions
 
-    https://github.com/APTATechnologies/tbd
+    https://github.com/APTATechnologies/APTAAnomaly
 
 author: Chris Hammerschmidt, Tom Catshoek
 tools:
@@ -29,12 +29,12 @@ sources:
         LET TmpDir <= tempdir()
         LET TmpResults <= tempdir()
         LET UnzipIt <= SELECT * FROM unzip(filename=Toolzip.FullPath, output_directory=TmpDir)
-        LET ExecCS <= SELECT * FROM execve(argv=[
-                        TmpDir + 'aptaanomaly.exe',
+        LET ExecAA <= SELECT * FROM execve(argv=[
+                        TmpDir + '\\aptaanomaly.exe',
                         '--input', EVTXPath,
                         '--output', TmpResults
-                        '--flexfringe', TmpDir + 'flexfringe-x64-windows.exe'], length=ExecLength)
+                        '--flexfringe', TmpDir + '\\flexfringe-x64-windows.exe'], length=ExecLength)
         SELECT * FROM foreach (
-            row={ SELECT FullPath FROM glob(globs=TmpResults + "/*.ff.final.json.result" },
+            row={ SELECT FullPath FROM glob(globs=TmpResults + "\\*.ff.final.json.result") },
             query={ SELECT * FROM parse_csv(data=read_file(filename=FullPath)) }
         )
