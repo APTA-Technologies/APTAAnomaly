@@ -3,6 +3,9 @@ Windows event log anomaly detection powered by ATPA technologies
 
 This repository contains a [velociraptor](https://docs.velociraptor.app/) artifact. It collects windows event log data, learns models from those logs, and uses those models to detect anomalous behavior. 
 
+## NOTE
+This is a prerelease, the tools used in this artifact are still under heavy development. There will most likely be bugs, but we would love to hear about any [issues](https://github.com/APTA-Technologies/APTAAnomaly/issues) you encounter so we can fix them as quickly as possible. Any other kind of constructive feedback is also very welcome!
+
 ## Usage
 
 First, get the artifact into velociraptor. An easy way to do this is by going to the `view artifacts` tab in the web UI, pressing the `add an artifact` button and copying the contents of the `Windows.EventLogs.APTAAnomaly` file into the editor that pops up.
