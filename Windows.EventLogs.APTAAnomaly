@@ -22,19 +22,27 @@ parameters:
     description: Size (in bytes) of output that will be returned for a single row for execve().  This value may need to be adjusted depending on the size of your event logs.
     type: int
     default: "100000000"
+  - name: Threshold
+    description: The threshold value to use to consider a log line novel behaviors
+    type: int
+    default: "5"
 
 sources:
   - query: |
-        LET Toolzip <= SELECT FullPath FROM Artifact.Generic.Utils.FetchBinary(ToolName="APTAAnomaly", IsExecutable=FALSE)
+        LET Toolzip <= SELECT FullPath FROM Artifact.Generic.Utils.FetchBinary(ToolName="APTAAnomaly", IsExecutable=FALSE, TemporaryOnly=TRUE)
         LET TmpDir <= tempdir()
-        LET TmpResults <= tempdir()
+        LET TmpResults <= tempdir(remove_last=TRUE)
         LET UnzipIt <= SELECT * FROM unzip(filename=Toolzip.FullPath, output_directory=TmpDir)
-        LET ExecAA <= SELECT * FROM execve(argv=[
+        LET ExecResults <= SELECT * FROM execve(argv=[
                         TmpDir + '\\aptaanomaly.exe',
                         '--input', EVTXPath,
-                        '--output', TmpResults
-                        '--flexfringe', TmpDir + '\\flexfringe-x64-windows.exe'], length=ExecLength)
+                        '--output', TmpResults,
+                        '--flexfringe', TmpDir + '\\flexfringe-x64-windows.exe',
+                        '--sortscores'],
+                        length=ExecLength,
+                        sep="\n")
         SELECT * FROM foreach (
-            row={ SELECT FullPath FROM glob(globs=TmpResults + "\\*.ff.final.json.result") },
-            query={ SELECT * FROM parse_csv(data=read_file(filename=FullPath)) }
+             row={ SELECT Name AS CSVName, OSPath, log(message=OSPath) FROM glob(globs="*.anomaly.result", root=TmpResults) },
+             query={ SELECT datetime, message, `sum scores`, CSVName FROM parse_csv(filename=OSPath, accessor="file", separator=",") }
         )
+        WHERE `sum scores` > Threshold
