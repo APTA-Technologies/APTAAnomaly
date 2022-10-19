@@ -6,6 +6,10 @@ This repository contains a [velociraptor](https://docs.velociraptor.app/) artifa
 ## NOTE
 This is a prerelease, the tools used in this artifact are still under heavy development. There will most likely be bugs, but we would love to hear about any [issues](https://github.com/APTA-Technologies/APTAAnomaly/issues) you encounter so we can fix them as quickly as possible. Any other kind of constructive feedback is also very welcome!
 
+## Parameters
+
+If you run APTAAnomaly during an incident and want results asap, you can set `CPULoad` to 1. If you want to run it on a machine still in production, you can set `CPULoad` to a lower number, e.g. `0.125`. It's the fraction of cores to use for processing the log data rounded up to the next full number of cores.
+
 ## Usage
 
 First, get the artifact into velociraptor. An easy way to do this is by going to the `view artifacts` tab in the web UI, pressing the `add an artifact` button and copying the contents of the `Windows.EventLogs.APTAAnomaly` file into the editor that pops up.
