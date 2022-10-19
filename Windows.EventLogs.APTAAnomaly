@@ -22,6 +22,10 @@ parameters:
     description: Size (in bytes) of output that will be returned for a single row for execve().  This value may need to be adjusted depending on the size of your event logs.
     type: int
     default: "100000000"
+  - name: CPULoad
+    description: Percentage of number of cores to use. Will round up.
+    type: float
+    default: 1.0
   - name: Threshold
     description: The threshold value to use to consider a log line novel behaviors
     type: int
@@ -35,6 +39,7 @@ sources:
         LET UnzipIt <= SELECT * FROM unzip(filename=Toolzip.FullPath, output_directory=TmpDir)
         LET ExecResults <= SELECT * FROM execve(argv=[
                         TmpDir + '\\aptaanomaly.exe',
+                        '--cpuload', CPULoad,
                         '--input', EVTXPath,
                         '--output', TmpResults,
                         '--flexfringe', TmpDir + '\\flexfringe-x64-windows.exe',
