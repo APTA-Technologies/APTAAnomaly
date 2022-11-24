@@ -44,7 +44,7 @@ sources:
                         '--output', TmpResults,
                         '--flexfringe', TmpDir + '\\flexfringe-x64-windows.exe',
                         '--sortscores',
-                        '--output-type velociraptor'],
+                        '--output-type', 'velociraptor'],
                         length=ExecLength,
                         sep="\n")
         SELECT * FROM foreach (
